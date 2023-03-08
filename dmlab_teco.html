@@ -1,0 +1,146 @@
+<!DOCTYPE HTML>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Video-to-3D: Evaluating Long-Term Consistency in Video Generation</title>
+
+  <style type="text/css"> 
+  </style>
+
+  <meta name="author" content="Anonymous Authors">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+  <!-- <script>$(document).ready(function(){
+    document.getElementById("tab0").click();
+  });
+  </script> -->
+</head>
+
+<body>
+  <div class="jumbotron jumbotron-fluid text-center">
+    <div class="container"></div>
+    <h2>
+      Temporally Consistent Video Transformer
+      <br>
+      for Long-Term Video Prediction
+    </h2>
+    <br>
+    <p class="authors">
+      <a>Anonymous Authors</a>
+    </p>
+  </div>
+  <div class="container">
+    <div class="section">
+        <h2>DMLab - TECO</h2>
+        <hr>
+        <p>It may take some time to initially load. Interactive 3D visualizer controls: Left Mouse - Rotate, Right Mouse - Translate, Mouse Wheel - Zoom</p>
+        <div class="viewers" style="width: 100%; overflow: hidden">
+          <center>
+            <div class="viewer-3d-container" style="width: 20%; float: left; margin-right: 5px; margin-bottom: 5px">
+                <div id="dmlab_teco_0" class="viewer-3d">
+                </div>
+            </div>
+            <div class="viewer-3d-container" style="width: 20%; float: left; margin-right: 5px; margin-bottom: 5px">
+                <div id="dmlab_teco_1" class="viewer-3d">
+                </div>
+            </div>
+            <div class="viewer-3d-container" style="width: 20%; float: left; margin-right: 5px; margin-bottom: 5px">
+                <div id="dmlab_teco_2" class="viewer-3d">
+                </div>
+            </div>
+            <div class="viewer-3d-container" style="width: 20%; float: left; margin-right: 5px; margin-bottom: 5px">
+                <div id="dmlab_teco_3" class="viewer-3d">
+                </div>
+            </div>
+            <div class="viewer-3d-container" style="width: 20%; float: left; margin-right: 5px">
+                <div id="dmlab_teco_4" class="viewer-3d">
+                </div>
+            </div>
+            <div class="viewer-3d-container" style="width: 20%; float: left; margin-right: 5px">
+                <div id="dmlab_teco_5" class="viewer-3d">
+                </div>
+            </div>
+            <div class="viewer-3d-container" style="width: 20%; float: left; margin-right: 5px">
+                <div id="dmlab_teco_6" class="viewer-3d">
+                </div>
+            </div>
+            <div class="viewer-3d-container" style="width: 20%; float: left; margin-right: 5px">
+                <div id="dmlab_teco_7" class="viewer-3d">
+                </div>
+            </div>
+            </center>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from "https://unpkg.com/three?module";
+        import { ArcballControls } from "https://unpkg.com/three/examples/jsm/controls/ArcballControls.js?module";
+        import { PCDLoader } from 'https://unpkg.com/three/examples/jsm/loaders/PCDLoader.js?module';
+        
+        let renderer_elements = document.getElementsByClassName("viewer-3d");
+
+        let cameras = [], scenes = [], renderers = [];
+
+        init();
+        render();
+
+        function init() {
+            for (let i = 0; i < renderer_elements.length; i++) {
+                let renderer_element = renderer_elements[i];
+                let rid = renderer_element.id
+                if (renderer_element.getElementsByTagName("canvas").length != 0) {
+                    continue;
+                }
+
+                let parts = rid.split("_");
+                let dset = parts[0];
+                let method = parts[1];
+                let num = '00000' + parts[2];
+                let path = 'pcds/' + dset + '/' + method + '/' + num.substr(num.length - 4) + '.pcd';
+                console.log(path)
+
+                let renderer = new THREE.WebGLRenderer({antialias: true});
+                renderers.push(renderer);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(renderer_element.clientWidth, renderer_element.clientWidth);
+                renderer_element.appendChild(renderer.domElement);
+
+                let scene = new THREE.Scene();
+                scenes.push(scene);
+                scene.background = new THREE.Color(0xeeeeee);
+
+                let camera = new THREE.PerspectiveCamera(30, 1, 0.01, 40);
+                cameras.push(camera)
+                camera.position.set(0.073386, -0.11875, 3.2253);
+                camera.rotation.x = 0.036801;
+                camera.rotation.y = 0.022733;
+                camera.rotation.z = -0.0008369;
+                scene.add(camera)
+
+                const controls = new ArcballControls(camera, renderer.domElement, scene);
+                controls.addEventListener('change', render);
+                
+                const loader = new PCDLoader();
+                loader.load(path, function(points) {
+                    points.geometry.center();
+                    points.name = path;
+                    points.material.size *= 8;
+                    scene.add(points);
+                    render();
+                });
+            }
+        }
+
+        function render() {
+            for (let i = 0; i < scenes.length; i++) {
+                renderers[i].render(scenes[i], cameras[i]);
+                // console.log(camera.position, camera.rotation.x, camera.rotation.y, camera.rotation.z);
+            }
+        }
+    </script>
+
+  </div>
+
+</body>
+
+</html>
